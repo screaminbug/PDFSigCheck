@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.itextpdf.text.pdf.AcroFields;
@@ -51,10 +52,12 @@ public class SignatureInfo {
 		if (localCertStore == null) {
 			loadLocalKeyStore();
 		} else {
+			boolean certLoaded = false;
 			log.info("Using your specified certificate");
 			CertificateFactory cf = CertificateFactory.getInstance("X509");
 			Collection<? extends Certificate> col = 
 				cf.generateCertificates(new FileInputStream(localCertStore));
+			
 			this.kall = KeyStore.getInstance(KeyStore.getDefaultType());
 			kall.load(null, null);
 			for (Certificate cert : col) {
@@ -62,8 +65,15 @@ public class SignatureInfo {
 					kall.setCertificateEntry(((X509Certificate) cert)
 							.getSerialNumber()
 							.toString(Character.MAX_RADIX), cert);
+					certLoaded = true;
+					log.log(Level.INFO, ((X509Certificate) cert).toString());
 				}
-		    
+						    
+			}
+			if (!certLoaded) {
+				log.log(Level.WARNING, "No certificate loaded so the final " +
+						"authenticity verification will probably fail!" +
+						"\nMake sure that the provided certificate is in DER format!");
 			}
 		}
 		init(fileName);

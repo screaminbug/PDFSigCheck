@@ -68,6 +68,7 @@ public class DocumentRevision {
 	}
 	
 	public Object verify() {
+		logIt(Level.INFO, pk.getSigningCertificate().toString());
 		Calendar cal = pk.getSignDate();
 	    Certificate pkc[] = pk.getCertificates();
 
