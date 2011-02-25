@@ -25,11 +25,13 @@ public class PDFSigCheck {
 	private static SignatureInfo checker;
 	private static int EXCEPTION_THROWN = -1;
 	private static int ARGUMENTS_ERROR = -2;
+	private static final String OUT_ARGUMENT = "o=";
 	
 	public static void main(String[] args) {
 		int returnValue = 0;
 		String pdfFile = null;
 		String storeFile = null;
+		String certFile = null;
 		try {
 					
 			switch (args.length) {
@@ -37,8 +39,15 @@ public class PDFSigCheck {
 				// uvijek vrati 0 za interactive ako nema drugih exceptiona
 				interactive();
 				System.exit(0); 
+			case 3:
 			case 2:
-				storeFile = args[1];
+				for (int i=1; i<args.length; i++) {
+					if (args[i].contains(OUT_ARGUMENT)) {
+						certFile = args[i].substring(OUT_ARGUMENT.length()).trim();
+					} else {
+						storeFile = args[i];
+					}
+				}				
 			case 1:
 				pdfFile = args[0];		
 				break;
@@ -55,7 +64,7 @@ public class PDFSigCheck {
 				DocumentRevision rev = checker.getRevision(name);
 				int modified = rev.isDocumentModified() ? 1 : 0;
 				int doesntCoverWhole = rev.signatureCoversWholeDocument() ? 0 : 1;
-				int verifyFail = rev.verify() == null ? 0 : 1;
+				int verifyFail = rev.verify(certFile) == null ? 0 : 1;
 				returnValue = verifyFail << 2 | modified  << 1 | doesntCoverWhole;
 				if (returnValue != 0) {
 					break;
